@@ -1,0 +1,2097 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Human Pose Estimation for Sports and Health - Qi Li</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/reveal.js@4.5.0/dist/reset.css">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/reveal.js@4.5.0/dist/reveal.css">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/reveal.js@4.5.0/dist/theme/white.css">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/reveal.js@4.5.0/plugin/highlight/monokai.css">
+    <style>
+        /* Apple Keynote Style - Clean, Minimal, Impactful */
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap');
+
+        :root {
+            /* Apple System Colors - Enhanced Contrast */
+            --apple-black: #000000;
+            --apple-dark: #000000;
+            --apple-text: #1d1d1f;
+            --apple-text-secondary: #424245;
+            --apple-gray: #6e6e73;
+            --apple-light-gray: #f5f5f7;
+            --apple-white: #ffffff;
+            --apple-blue: #0066cc;
+            --apple-blue-dark: #004499;
+            --apple-green: #248a3d;
+            --apple-red: #d70015;
+
+            /* Gradient colors */
+            --gradient-start: #1d1d1f;
+            --gradient-end: #000000;
+        }
+
+        /* Base Typography - High Contrast */
+        .reveal {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'SF Pro Display', 'Segoe UI', Roboto, sans-serif;
+            font-size: 24px;
+            color: var(--apple-black);
+            font-weight: 400;
+            letter-spacing: -0.01em;
+        }
+
+        .reveal h1, .reveal h2, .reveal h3, .reveal h4 {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'SF Pro Display', sans-serif;
+            color: var(--apple-black);
+            text-transform: none;
+            font-weight: 700;
+            letter-spacing: -0.02em;
+            line-height: 1.1;
+        }
+
+        .reveal h1 {
+            font-size: 2.8em;
+            font-weight: 800;
+        }
+        .reveal h2 {
+            font-size: 2em;
+            font-weight: 700;
+            margin-bottom: 0.8em;
+        }
+        .reveal h3 {
+            font-size: 1.3em;
+            font-weight: 600;
+            color: var(--apple-text);
+        }
+
+        .reveal p {
+            color: var(--apple-text);
+            line-height: 1.6;
+        }
+
+        /* Slide backgrounds */
+        .reveal .slides section {
+            background: var(--apple-white);
+            padding: 40px;
+        }
+
+        /* Title slide - Dark Apple style with forced white text */
+        .reveal .slides section.title-slide {
+            background: linear-gradient(180deg, #1d1d1f 0%, #000000 100%) !important;
+        }
+
+        .reveal .title-slide h1,
+        .reveal .title-slide h1.title {
+            color: #ffffff !important;
+            font-weight: 800;
+            font-size: 2.5em;
+            letter-spacing: -0.03em;
+        }
+
+        .reveal .title-slide h2,
+        .reveal .title-slide h3 {
+            color: rgba(255,255,255,0.7) !important;
+            font-weight: 400;
+        }
+
+        .reveal .title-slide p {
+            color: #ffffff !important;
+        }
+
+        .reveal .title-slide strong {
+            color: #ffffff !important;
+        }
+
+        .reveal .title-slide strong {
+            color: var(--apple-white);
+            font-weight: 600;
+        }
+
+        .reveal .title-slide .gold-accent {
+            color: var(--apple-blue);
+            font-weight: 500;
+        }
+
+        /* Section title slides - forced dark background and white text */
+        .reveal .slides section.section-title {
+            background: linear-gradient(180deg, #1d1d1f 0%, #000000 100%) !important;
+        }
+
+        .reveal .slides section.section-title h2 {
+            color: #ffffff !important;
+            font-size: 2.5em;
+            font-weight: 700;
+        }
+
+        .reveal .slides section.section-title p {
+            color: #66b3ff !important;
+            font-weight: 500;
+            font-size: 1.2em;
+        }
+
+        .reveal .slides section.section-title .section-number {
+            color: rgba(255,255,255,0.6) !important;
+            font-size: 1em;
+            font-weight: 500;
+            text-transform: uppercase;
+            letter-spacing: 0.1em;
+        }
+
+        /* Lists - Clean Apple style with high contrast */
+        .reveal ul, .reveal ol {
+            display: block;
+            text-align: left;
+            margin-left: 0.5em;
+        }
+
+        .reveal li {
+            margin-bottom: 0.6em;
+            line-height: 1.5;
+            color: var(--apple-text);
+        }
+
+        .reveal ul li::marker {
+            color: var(--apple-blue);
+        }
+
+        /* Emphasis */
+        .reveal strong {
+            color: var(--apple-black);
+            font-weight: 700;
+        }
+
+        .reveal .highlight {
+            color: var(--apple-blue-dark);
+            font-weight: 700;
+        }
+
+        /* Accent box - Apple card style with high contrast */
+        .reveal .accent-box {
+            background: var(--apple-light-gray);
+            padding: 24px 28px;
+            border-radius: 18px;
+            margin: 24px 0;
+            text-align: left;
+            border: none;
+            box-shadow: none;
+        }
+
+        .reveal .accent-box h3 {
+            color: var(--apple-black);
+            margin-top: 0;
+            margin-bottom: 12px;
+            font-size: 1.1em;
+            font-weight: 700;
+        }
+
+        .reveal .accent-box p {
+            color: var(--apple-text);
+            margin: 0;
+        }
+
+        .reveal .accent-box li {
+            color: var(--apple-text);
+        }
+
+        .reveal .accent-box strong {
+            color: var(--apple-black);
+            font-weight: 700;
+        }
+
+        /* Tables - Clean minimal style with high contrast */
+        .reveal table {
+            margin: auto;
+            border-collapse: separate;
+            border-spacing: 0;
+            font-size: 0.75em;
+            border-radius: 12px;
+            overflow: hidden;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.1);
+        }
+
+        .reveal table th {
+            background: var(--apple-black);
+            color: var(--apple-white);
+            padding: 14px 18px;
+            font-weight: 600;
+            text-transform: none;
+            font-size: 0.95em;
+            letter-spacing: 0;
+        }
+
+        .reveal table td {
+            padding: 12px 18px;
+            border: none;
+            border-bottom: 1px solid rgba(0,0,0,0.08);
+            color: var(--apple-text);
+            background: var(--apple-white);
+        }
+
+        .reveal table tr:last-child td {
+            border-bottom: none;
+        }
+
+        .reveal table tr:nth-child(even) td {
+            background: var(--apple-light-gray);
+        }
+
+        .reveal table .best,
+        .reveal table .best td {
+            background: rgba(0, 102, 204, 0.12) !important;
+            color: var(--apple-blue-dark);
+            font-weight: 700;
+        }
+
+        /* Images - Clean shadows */
+        .reveal img {
+            max-height: 480px;
+            border: none;
+            border-radius: 12px;
+            box-shadow: 0 8px 30px rgba(0, 0, 0, 0.12);
+        }
+
+        .reveal .no-shadow img {
+            box-shadow: none;
+        }
+
+        /* Two column layout */
+        .reveal .columns {
+            display: flex;
+            gap: 40px;
+            align-items: flex-start;
+        }
+
+        .reveal .column {
+            flex: 1;
+        }
+
+        /* Progress indicator */
+        .reveal .progress {
+            height: 3px;
+            background: var(--apple-blue);
+        }
+
+        /* Slide numbers */
+        .reveal .slide-number {
+            background: transparent;
+            color: var(--apple-text-secondary);
+            font-size: 13px;
+            font-weight: 600;
+            padding: 10px 15px;
+        }
+
+        /* Equations - Clean card with high contrast */
+        .reveal .equation {
+            background: var(--apple-light-gray);
+            padding: 20px 32px;
+            border-radius: 14px;
+            margin: 24px auto;
+            display: inline-block;
+            border: none;
+            color: var(--apple-black);
+            font-weight: 600;
+            font-family: 'SF Mono', 'Menlo', monospace;
+        }
+
+        /* Speaker notes */
+        .reveal .speaker-notes {
+            font-family: 'Inter', -apple-system, sans-serif;
+            font-size: 15px;
+        }
+
+        /* Contribution cards - Apple card style with high contrast */
+        .reveal .contribution-card {
+            background: var(--apple-white);
+            padding: 24px;
+            margin: 12px;
+            border-radius: 18px;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.1);
+            border: 1px solid rgba(0,0,0,0.06);
+            text-align: left;
+        }
+
+        .reveal .contribution-card h3 {
+            color: var(--apple-black);
+            margin-top: 0;
+            margin-bottom: 10px;
+            font-weight: 700;
+            font-size: 1.1em;
+        }
+
+        .reveal .contribution-card p {
+            color: var(--apple-text-secondary);
+            font-size: 0.95em;
+            margin: 0;
+            line-height: 1.5;
+        }
+
+        /* Stats boxes - Bold Apple style */
+        .reveal .stats-box {
+            display: inline-block;
+            background: var(--apple-black);
+            color: var(--apple-white);
+            padding: 24px 36px;
+            margin: 12px;
+            border-radius: 20px;
+            text-align: center;
+        }
+
+        .reveal .stats-box .number {
+            font-size: 2.8em;
+            font-weight: 800;
+            color: var(--apple-white);
+            display: block;
+            line-height: 1.1;
+            letter-spacing: -0.03em;
+        }
+
+        .reveal .stats-box .label {
+            font-size: 0.85em;
+            color: rgba(255,255,255,0.8);
+            margin-top: 8px;
+            display: block;
+            font-weight: 500;
+        }
+
+        /* Thank you slide - forced white text */
+        .reveal .slides section.thank-you {
+            background: linear-gradient(180deg, #1d1d1f 0%, #000000 100%) !important;
+        }
+
+        .reveal .slides section.thank-you h2 {
+            color: #ffffff !important;
+            font-size: 3em;
+            font-weight: 700;
+        }
+
+        .reveal .slides section.thank-you p {
+            color: rgba(255,255,255,0.85) !important;
+        }
+
+        .reveal .slides section.thank-you strong {
+            color: #ffffff !important;
+        }
+
+        /* Small text */
+        .reveal .small {
+            font-size: 0.75em;
+            color: var(--apple-text-secondary);
+        }
+
+        /* Workflow - Clean pills */
+        .reveal .workflow {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 16px;
+            flex-wrap: wrap;
+        }
+
+        .reveal .workflow-step {
+            background: var(--apple-black);
+            color: var(--apple-white);
+            padding: 14px 28px;
+            border-radius: 50px;
+            font-weight: 500;
+            font-size: 0.9em;
+        }
+
+        .reveal .workflow-arrow {
+            color: var(--apple-text-secondary);
+            font-size: 1.4em;
+            font-weight: 700;
+        }
+
+        /* Image grid */
+        .reveal .image-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 20px;
+            margin: 24px 0;
+        }
+
+        .reveal .image-grid img {
+            width: 100%;
+            height: auto;
+            border-radius: 10px;
+        }
+
+        /* Links - darker blue for better contrast */
+        .reveal a {
+            color: var(--apple-blue-dark);
+            font-weight: 600;
+            text-decoration: none;
+        }
+
+        .reveal a:hover {
+            text-decoration: underline;
+        }
+
+        /* HR styling */
+        .reveal hr {
+            border: none;
+            height: 1px;
+            background: rgba(255,255,255,0.3);
+            margin: 30px auto;
+        }
+
+        /* Fragment animations */
+        .reveal .fragment {
+            transition: all 0.3s ease;
+        }
+
+        /* Override for dark slides - high contrast white text */
+        .reveal section[data-background-color="#000000"] h2,
+        .reveal section[data-background-color="#000000"] h3,
+        .reveal section[data-background-color="#1d1d1f"] h2,
+        .reveal section[data-background-color="#1d1d1f"] h3 {
+            color: var(--apple-white);
+        }
+
+        .reveal section[data-background-color="#000000"] p,
+        .reveal section[data-background-color="#000000"] li,
+        .reveal section[data-background-color="#1d1d1f"] p,
+        .reveal section[data-background-color="#1d1d1f"] li {
+            color: rgba(255,255,255,0.85);
+        }
+
+        .reveal section[data-background-color="#000000"] strong,
+        .reveal section[data-background-color="#1d1d1f"] strong {
+            color: var(--apple-white);
+            font-weight: 700;
+        }
+
+        /* Image captions on light slides */
+        .reveal .small {
+            font-size: 0.75em;
+            color: var(--apple-text-secondary);
+            font-weight: 500;
+        }
+    </style>
+</head>
+<body>
+    <div class="reveal">
+        <div class="slides">
+
+            <!-- ==================== PART 1: INTRODUCTION ==================== -->
+
+            <!-- Slide 1: Title Slide -->
+            <section class="title-slide" data-background-color="#000000">
+                <h1 style="font-size: 1.8em; color: #ffffff !important;">Advancing Human-Centric Computer Vision</h1>
+                <h3 style="font-weight: normal; margin-top: 0.5em; color: rgba(255,255,255,0.7) !important;">From High-Performance Sports Analytics to
+                    Healthcare Interventions</h3>
+                <hr style="border: none; height: 1px; background: rgba(255,255,255,0.3); width: 50%; margin: 30px auto;">
+                <p style="font-size: 1.2em; color: #ffffff !important;"><strong style="color: #ffffff !important;">Qi Li, Ph.D.</strong></p>
+                <p style="font-size: 0.9em; color: rgba(255,255,255,0.9) !important;">
+                Ph.D., Computer Science, Auburn University<br>
+                Currently at Fisk University</p>
+                <!-- <p style="font-size: 0.8em; margin-top: 30px; color: rgba(255,255,255,0.8) !important;">
+                    <span class="gold-accent" style="color: #66b3ff !important;">Ph.D. Advisor: Prof. Wei Shinn Ku</span>
+                </p> -->
+                <aside class="notes">
+                    Good morning/afternoon everyone. I'm Qi Li, and today I'm excited to present my research on Human Pose Estimation for Sports and Health. My work bridges computer vision and AI with real-world applications in sports analytics and healthcare. I completed my Ph.D. at Auburn University and currently work at Fisk University where I mentor undergraduate research.
+                </aside>
+            </section>
+
+            <!-- Slide 2: About Me -->
+            <section>
+                <h2>About Me</h2>
+                <div class="columns">
+                    <div class="column">
+                        <h3>Research Interests</h3>
+                        <ul>
+                            <li>Computer Vision</li>
+                            <li>Deep Learning</li>
+                            <li>Human Pose Estimation</li>
+                            <li>Action Recognition</li>
+                            <li>Multimodal Learning</li>
+                            <li>Healthcare AI</li>
+                        </ul>
+                    </div>
+                    <div class="column">
+                        <h3>Background</h3>
+                        <ul>
+                            <li>Ph.D. in Computer Science, Auburn University</li>
+                            <li>Faculty at Fisk University</li>
+                            <li>Experience with deep learning frameworks</li>
+                            <li>Mentoring undergraduate research projects</li>
+                        </ul>
+                    </div>
+                </div>
+                <aside class="notes">
+                    My research sits at the intersection of computer vision, deep learning, and practical applications. I'm passionate about developing AI solutions that have real-world impact in sports performance and healthcare. I currently serve as faculty at Fisk University where I mentor undergraduate students on honors and thesis projects.
+                </aside>
+            </section>
+
+            <!-- Slide 2b: Publications
+            <section>
+                <h2>Selected Publications</h2>
+                <div class="accent-box">
+                    <h3>Conference Papers</h3>
+                    <ul>
+                        <li><strong>Qi Li</strong>, Wei Shinn Ku. "VideoBadminton: A Fine-Grained Action Recognition Dataset for Badminton Sports Analysis." <em>[Venue/Year - Please Update]</em></li>
+                        <li><strong>Qi Li</strong>, Wei Shinn Ku. "Badminton-CLIP: Adapting Multimodal Models for Sports Action Recognition." <em>[Venue/Year - Please Update]</em></li>
+                    </ul>
+                </div>
+                <div class="accent-box">
+                    <h3>Journal Papers / Under Review</h3>
+                    <ul>
+                        <li><strong>Qi Li</strong>, et al. "Camera-Based Sitting Posture Analysis for Lower Back Pain Prevention." <em>[Venue/Year - Please Update]</em></li>
+                    </ul>
+                </div>
+                <p class="small" style="margin-top: 20px; text-align: center;">
+                    <em>Note: Please update with your actual publication venues and years</em>
+                </p>
+                <aside class="notes">
+                    Here are my key publications. The VideoBadminton dataset paper introduces our benchmark for fine-grained sports action recognition. The Badminton-CLIP paper presents our multimodal approach. And our sitting posture work applies pose estimation to healthcare.
+                </aside>
+            </section> -->
+            <!-- Deep Learning Impact on Daily Life -->
+            <section data-transition="fade">
+                <h2>Artificial Intelligence in <span class="highlight">Everyday Life</span></h2>
+                <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 30px; max-width: 1200px; margin: 30px auto;">
+                    <div class="card" style="text-align: center; padding: 25px;">
+                        <div style="font-size: 2.5em; margin-bottom: 15px;">🗣️</div>
+                        <h3 style="color: #3b82f6; margin: 0 0 10px 0;">Voice Assistants</h3>
+                        <p class="subtext" style="margin: 0;">Siri, Alexa, Google Assistant</p>
+                        <p class="subtext" style="margin: 5px 0 0 0; font-size: 0.85em;">Speech recognition & NLP</p>
+                    </div>
+                    <div class="card" style="text-align: center; padding: 25px;">
+                        <div style="font-size: 2.5em; margin-bottom: 15px;">🚗</div>
+                        <h3 style="color: #22c55e; margin: 0 0 10px 0;">Self-Driving Cars</h3>
+                        <p class="subtext" style="margin: 0;">Tesla, Waymo, Cruise</p>
+                        <p class="subtext" style="margin: 5px 0 0 0; font-size: 0.85em;">Computer vision & decision making</p>
+                    </div>
+                    <div class="card" style="text-align: center; padding: 25px;">
+                        <div style="font-size: 2.5em; margin-bottom: 15px;">📱</div>
+                        <h3 style="color: #f97316; margin: 0 0 10px 0;">Face Recognition</h3>
+                        <p class="subtext" style="margin: 0;">Phone unlock, photo tagging</p>
+                        <p class="subtext" style="margin: 5px 0 0 0; font-size: 0.85em;">Facial feature extraction</p>
+                    </div>
+                    <div class="card fragment" style="text-align: center; padding: 25px;">
+                        <div style="font-size: 2.5em; margin-bottom: 15px;">🎬</div>
+                        <h3 style="color: #8b5cf6; margin: 0 0 10px 0;">Recommendations</h3>
+                        <p class="subtext" style="margin: 0;">Netflix, YouTube, Spotify</p>
+                        <p class="subtext" style="margin: 5px 0 0 0; font-size: 0.85em;">Personalized content discovery</p>
+                    </div>
+                    <div class="card fragment" style="text-align: center; padding: 25px;">
+                        <div style="font-size: 2.5em; margin-bottom: 15px;">🏥</div>
+                        <h3 style="color: #ef4444; margin: 0 0 10px 0;">Medical Diagnosis</h3>
+                        <p class="subtext" style="margin: 0;">X-ray, MRI analysis</p>
+                        <p class="subtext" style="margin: 5px 0 0 0; font-size: 0.85em;">Disease detection & prognosis</p>
+                    </div>
+                    <div class="card fragment" style="text-align: center; padding: 25px;">
+                        <div style="font-size: 2.5em; margin-bottom: 15px;">💬</div>
+                        <h3 style="color: #06b6d4; margin: 0 0 10px 0;">AI Chatbots</h3>
+                        <p class="subtext" style="margin: 0;">ChatGPT, Claude, Gemini</p>
+                        <p class="subtext" style="margin: 5px 0 0 0; font-size: 0.85em;">Language understanding & generation</p>
+                    </div>
+                </div>
+                <!-- <p class="fragment key-point" style="margin-top: 20px;">At the core: <span class="highlight">Classification</span> — machines learning to make decisions from data</p> -->
+            </section>
+
+            <!-- Slide 3: Research Motivation -->
+            <section>
+                <h2>Research Motivation</h2>
+                <div class="columns">
+                    <div class="column">
+                        <div class="accent-box">
+                            <h3>Sports Analytics</h3>
+                            <ul>
+                                <li>Rapid, complex athletic movements</li>
+                                <li>Need for automated analysis</li>
+                                <li>Performance optimization</li>
+                                <li>Injury prevention</li>
+                            </ul>
+                        </div>
+                    </div>
+                    <div class="column">
+                        <div class="accent-box">
+                            <h3>Healthcare</h3>
+                            <ul>
+                                <li>Lower back pain affects millions</li>
+                                <li>Poor sitting posture is a major cause</li>
+                                <li>Traditional assessment is time-consuming</li>
+                                <li>Need for accessible solutions</li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+                <p class="fragment" style="margin-top: 30px;">
+                    <strong>Key Question:</strong> How can we leverage AI and deep learning to understand human movement better?
+                </p>
+                <aside class="notes">
+                    The motivation for my research comes from two domains. In sports, coaches need automated tools to analyze rapid, complex movements. In healthcare, lower back pain is one of the most common reasons for missed workdays, and poor sitting posture is a major contributor.
+                </aside>
+            </section>
+
+            <!-- Slide 4: Research Vision -->
+            <section>
+                <h2>Research Vision</h2>
+                <p style="font-size: 1.1em;">Bridging AI with Sports and Healthcare through Human Pose Estimation</p>
+                <div style="margin: 40px 0;">
+                    <div class="workflow">
+                        <div class="workflow-step">Video Input</div>
+                        <span class="workflow-arrow">&#8594;</span>
+                        <div class="workflow-step">Pose Estimation</div>
+                        <span class="workflow-arrow">&#8594;</span>
+                        <div class="workflow-step">Action Recognition</div>
+                        <span class="workflow-arrow">&#8594;</span>
+                        <div class="workflow-step">Real-World Impact</div>
+                    </div>
+                </div>
+                <div class="columns" style="margin-top: 30px;">
+                    <div class="column" style="text-align: center;">
+                        <div class="stats-box">
+                            <div class="number">Sports</div>
+                            <div class="label">Performance Analysis</div>
+                        </div>
+                    </div>
+                    <div class="column" style="text-align: center;">
+                        <div class="stats-box">
+                            <div class="number">Health</div>
+                            <div class="label">Posture Correction</div>
+                        </div>
+                    </div>
+                </div>
+                <aside class="notes">
+                    My vision is to create a pipeline that goes from raw video to actionable insights. Whether it's analyzing badminton strokes or detecting poor sitting posture, the underlying technology is human pose estimation enhanced by deep learning.
+                </aside>
+            </section>
+
+            <!-- Slide 5: Talk Overview -->
+            <section>
+                <h2>Talk Overview</h2>
+                <table style="width: 100%; font-size: 0.85em;">
+                    <tr>
+                        <th style="width: 30%;">Section</th>
+                        <th>Content</th>
+                    </tr>
+                    <tr>
+                        <td><strong>Part 1</strong></td>
+                        <td>Introduction & Background</td>
+                    </tr>
+                    <tr>
+                        <td><strong>Part 2</strong></td>
+                        <td>VideoBadminton Dataset - A New Benchmark</td>
+                    </tr>
+                    <tr>
+                        <td><strong>Part 3</strong></td>
+                        <td>Badminton-CLIP - Multimodal Action Recognition</td>
+                    </tr>
+                    <tr>
+                        <td><strong>Part 4</strong></td>
+                        <td>Sitting Posture Analysis for Healthcare</td>
+                    </tr>
+                    <tr>
+                        <td><strong>Part 5</strong></td>
+                        <td>Conclusions & Future Directions</td>
+                    </tr>
+                </table>
+                <aside class="notes">
+                    Here's the roadmap for today's talk. I'll start with background, then dive into my three main contributions: the VideoBadminton dataset, the Badminton-CLIP model, and sitting posture analysis for healthcare.
+                </aside>
+            </section>
+
+            <!-- ==================== PART 2: BACKGROUND ==================== -->
+
+            <!-- Slide 6: Section Title - Background -->
+            <section class="section-title" data-background-color="#000000">
+                <p class="section-number">Part 1</p>
+                <h2>Background & Foundations</h2>
+            </section>
+
+            <!-- Slide 7: Human Pose Estimation Overview -->
+            <section>
+                <h2>Human Pose Estimation Overview</h2>
+                <div class="columns">
+                    <div class="column">
+                        <h3>Definition</h3>
+                        <p>Identifying the position and orientation of key body parts (keypoints) in images or video</p>
+                        <h3 style="margin-top: 20px;">Key Components</h3>
+                        <ul>
+                            <li>Keypoint detection</li>
+                            <li>Skeleton reconstruction</li>
+                            <li>2D vs 3D estimation</li>
+                        </ul>
+                    </div>
+                    <div class="column">
+                        <img src="Figures/models_for_human_body_modeling.jpg" alt="Human body modeling" style="max-height: 400px;">
+                        <p class="small">Types of human body models: kinematic, planar, volumetric</p>
+                    </div>
+                </div>
+                <aside class="notes">
+                    Human pose estimation is the task of detecting key body joints - like shoulders, elbows, hips, and knees - in images or video. We can represent the body using different models: kinematic models for 2D/3D, planar models for 2D, and volumetric models for 3D.
+                </aside>
+            </section>
+
+            <!-- Slide 8: Action Recognition Challenges -->
+            <section>
+                <h2>Action Recognition Challenges</h2>
+                <div class="columns">
+                    <div class="column">
+                        <h3>Technical Challenges</h3>
+                        <ul>
+                            <li><strong>Temporal dynamics:</strong> Capturing motion over time</li>
+                            <li><strong>Variability:</strong> Same action performed differently</li>
+                            <li><strong>Occlusions:</strong> Body parts hidden from view</li>
+                            <li><strong>Fine-grained distinctions:</strong> Similar actions with subtle differences</li>
+                        </ul>
+                    </div>
+                    <div class="column">
+                        <h3>Domain-Specific Challenges</h3>
+                        <ul>
+                            <li><strong>Sports:</strong> Rapid movements, complex poses</li>
+                            <li><strong>Healthcare:</strong> Subtle posture variations</li>
+                            <li><strong>Real-time:</strong> Low latency requirements</li>
+                            <li><strong>Data scarcity:</strong> Limited labeled datasets</li>
+                        </ul>
+                    </div>
+                </div>
+                <aside class="notes">
+                    Action recognition is challenging because we need to capture temporal dynamics, handle variability in how actions are performed, deal with occlusions, and distinguish between similar actions. In sports, movements are rapid; in healthcare, posture variations can be subtle.
+                </aside>
+            </section>
+
+            <!-- Slide 9: Deep Learning for Video Understanding -->
+            <section>
+                <h2>Deep Learning for Video Understanding</h2>
+                <table style="font-size: 0.75em;">
+                    <tr>
+                        <th>Architecture</th>
+                        <th>Approach</th>
+                        <th>Strengths</th>
+                    </tr>
+                    <tr>
+                        <td><strong>2D CNN</strong></td>
+                        <td>Frame-by-frame processing</td>
+                        <td>Spatial features</td>
+                    </tr>
+                    <tr>
+                        <td><strong>3D CNN</strong></td>
+                        <td>Spatiotemporal convolutions</td>
+                        <td>Motion patterns</td>
+                    </tr>
+                    <tr>
+                        <td><strong>Two-Stream</strong></td>
+                        <td>RGB + Optical Flow</td>
+                        <td>Appearance + Motion</td>
+                    </tr>
+                    <tr>
+                        <td><strong>RNN/LSTM</strong></td>
+                        <td>Sequential processing</td>
+                        <td>Temporal dependencies</td>
+                    </tr>
+                    <tr>
+                        <td><strong>Transformers</strong></td>
+                        <td>Self-attention mechanism</td>
+                        <td>Long-range dependencies</td>
+                    </tr>
+                    <tr>
+                        <td><strong>Graph Networks</strong></td>
+                        <td>Skeleton as graph</td>
+                        <td>Structural relationships</td>
+                    </tr>
+                </table>
+                <aside class="notes">
+                    The field has evolved from 2D CNNs to sophisticated architectures. Two-stream networks combine appearance and motion. 3D CNNs process spatiotemporal features directly. Transformers capture long-range dependencies, and graph networks model the body as a connected structure.
+                </aside>
+            </section>
+
+            <!-- Slide 10: Research Questions -->
+            <section>
+                <h2>Research Questions</h2>
+                <div class="accent-box">
+                    <h3>RQ1: Data</h3>
+                    <p>How can we create high-quality datasets for fine-grained sports action recognition?</p>
+                </div>
+                <div class="accent-box">
+                    <h3>RQ2: Models</h3>
+                    <p>How can multimodal learning improve action recognition in sports videos?</p>
+                </div>
+                <div class="accent-box">
+                    <h3>RQ3: Applications</h3>
+                    <p>How can camera-based pose estimation enable accessible healthcare solutions?</p>
+                </div>
+                <aside class="notes">
+                    My research addresses three key questions: First, how do we create quality datasets for fine-grained sports actions? Second, how can multimodal learning - combining vision and language - improve recognition? Third, how can we make pose estimation accessible for healthcare applications?
+                </aside>
+            </section>
+
+            <!-- ==================== PART 3: VIDEOBADMINTON ==================== -->
+
+            <!-- Slide 11: Section Title - VideoBadminton -->
+            <section class="section-title" data-background-color="#000000">
+                <p class="section-number">Part 2</p>
+                <h2>VideoBadminton Dataset</h2>
+                <p style="color: #66b3ff; font-weight: 600;">A New Benchmark for Fine-Grained Action Recognition</p>
+            </section>
+
+            <!-- Slide 12: Why Sports Action Recognition? -->
+            <section>
+                <h2>Why Sports Action Recognition?</h2>
+                <div class="columns">
+                    <div class="column">
+                        <h3>Applications</h3>
+                        <ul>
+                            <li><strong>Performance Analysis:</strong> Technique refinement</li>
+                            <li><strong>Training Optimization:</strong> Personalized feedback</li>
+                            <li><strong>Injury Prevention:</strong> Movement pattern analysis</li>
+                            <li><strong>Broadcasting:</strong> Automated highlights</li>
+                            <li><strong>Strategy Development:</strong> Opponent analysis</li>
+                        </ul>
+                    </div>
+                    <div class="column">
+                        <h3>Why Badminton?</h3>
+                        <ul>
+                            <li>One of the fastest racket sports</li>
+                            <li>Complex stroke techniques</li>
+                            <li>Fine-grained action differences</li>
+                            <li>Limited existing datasets</li>
+                            <li>Global popularity (2nd most played sport)</li>
+                        </ul>
+                    </div>
+                </div>
+                <aside class="notes">
+                    Sports action recognition has numerous applications from coaching to broadcasting. I chose badminton because it's one of the fastest racket sports with shuttlecocks reaching 400 km/h, requires complex techniques, and had limited datasets available for fine-grained analysis.
+                </aside>
+            </section>
+
+            <!-- Slide 13: Gaps in Existing Datasets -->
+            <section>
+                <h2>Gaps in Existing Datasets</h2>
+                <table style="font-size: 0.65em;">
+                    <tr>
+                        <th>Dataset</th>
+                        <th>Clips</th>
+                        <th>Classes</th>
+                        <th>Duration</th>
+                        <th>Source</th>
+                        <th>Year</th>
+                    </tr>
+                    <tr>
+                        <td>Kinetics400</td>
+                        <td>306k</td>
+                        <td>400</td>
+                        <td>50k min</td>
+                        <td>Internet</td>
+                        <td>2017</td>
+                    </tr>
+                    <tr>
+                        <td>UCF101</td>
+                        <td>13k</td>
+                        <td>101</td>
+                        <td>1.6k min</td>
+                        <td>Internet</td>
+                        <td>2012</td>
+                    </tr>
+                    <tr>
+                        <td>FineGym</td>
+                        <td>12.8k</td>
+                        <td>530</td>
+                        <td>9.8k min</td>
+                        <td>Internet</td>
+                        <td>2020</td>
+                    </tr>
+                    <tr>
+                        <td>ShuttleNet</td>
+                        <td>43k</td>
+                        <td>10</td>
+                        <td>-</td>
+                        <td>Mixed</td>
+                        <td>2022</td>
+                    </tr>
+                    <tr class="best">
+                        <td><strong>VideoBadminton (Ours)</strong></td>
+                        <td><strong>7,822</strong></td>
+                        <td><strong>18</strong></td>
+                        <td><strong>145 min</strong></td>
+                        <td><strong>Self-recorded</strong></td>
+                        <td><strong>2024</strong></td>
+                    </tr>
+                </table>
+                <div class="fragment accent-box" style="margin-top: 20px;">
+                    <strong>Key Gap:</strong> Existing datasets focus on coarse-grained recognition. We need fine-grained stroke-level analysis with controlled recording conditions.
+                </div>
+                <aside class="notes">
+                    Existing datasets like Kinetics and UCF101 are general-purpose. Even sport-specific datasets like FineGym or ShuttleNet don't provide the fine-grained stroke-level annotation we need. Our VideoBadminton fills this gap with 18 distinct badminton action classes.
+                </aside>
+            </section>
+
+            <!-- Slide 14: VideoBadminton Overview -->
+            <section>
+                <h2>VideoBadminton: Dataset Overview</h2>
+                <div style="display: flex; justify-content: center; gap: 20px; margin: 30px 0;">
+                    <div class="stats-box">
+                        <div class="number">7,822</div>
+                        <div class="label">Video Clips</div>
+                    </div>
+                    <div class="stats-box">
+                        <div class="number">18</div>
+                        <div class="label">Action Classes</div>
+                    </div>
+                    <div class="stats-box">
+                        <div class="number">145</div>
+                        <div class="label">Minutes</div>
+                    </div>
+                    <div class="stats-box">
+                        <div class="number">19</div>
+                        <div class="label">Players</div>
+                    </div>
+                </div>
+                <div class="accent-box">
+                    <strong>Key Features:</strong>
+                    <ul>
+                        <li>High-quality self-recorded footage (1280x960 @ 60fps)</li>
+                        <li>Fine-grained action categories based on BWF standards</li>
+                        <li>Expert annotation by badminton coaches</li>
+                        <li>Comprehensive metadata including player and shuttle tracking</li>
+                    </ul>
+                </div>
+                <aside class="notes">
+                    VideoBadminton contains nearly 8,000 video clips across 18 action classes, totaling 145 minutes of footage from 19 skilled players. The dataset is recorded at 60fps with expert annotation following Badminton World Federation standards.
+                </aside>
+            </section>
+
+            <!-- Slide: Data Collection Workflow -->
+            <section>
+                <h2>Data Collection Workflow</h2>
+                <div style="display: flex; justify-content: center; align-items: center; margin-top: 20px;">
+                    <img src="Figures/videobadminton_data_collection_workflow.png" alt="VideoBadminton Data Collection Workflow" style="max-width: 95%; max-height: 520px; border-radius: 8px;">
+                </div>
+                <aside class="notes">
+                    This diagram illustrates the complete data collection workflow for the VideoBadminton dataset, from video recording to final annotation and quality control.
+                </aside>
+            </section>
+
+            <!-- Slide 15: Data Collection Process -->
+            <section>
+                <h2>Data Collection Process</h2>
+                <div class="columns">
+                    <div class="column">
+                        <h3>Participants</h3>
+                        <ul>
+                            <li>19 skilled players from university team</li>
+                            <li>15 male, 4 female athletes</li>
+                            <li>Near-professional skill level</li>
+                            <li>Wide range of playing styles</li>
+                        </ul>
+                        <h3 style="margin-top: 20px;">Recording Setup</h3>
+                        <ul>
+                            <li>Camera: DFK 37AUX273</li>
+                            <li>Resolution: 1280 x 960</li>
+                            <li>Frame rate: 60 fps</li>
+                            <li>Format: XRGB</li>
+                        </ul>
+                    </div>
+                    <div class="column">
+                        <img src="Figures/camera_fig.jpg" alt="Camera setup" style="max-height: 400px;">
+                        <p class="small">Camera positioned 2m behind baseline, 4.5m height, 30&deg; angle</p>
+                    </div>
+                </div>
+                <aside class="notes">
+                    We recruited 19 skilled players from the university badminton team. The camera was carefully positioned to simulate broadcast views - 2 meters behind the baseline, elevated to 4.5 meters, and tilted at 30 degrees. This captures the full court and player movements optimally.
+                </aside>
+            </section>
+
+            <!-- Slide 16: Data Preprocessing -->
+            <section>
+                <h2>Data Preprocessing: Distortion Correction</h2>
+                <p>Wide-angle lens causes distortion that must be corrected for accurate analysis</p>
+                <div class="columns" style="margin-top: 20px;">
+                    <div class="column" style="text-align: center;">
+                        <img src="Figures/pre_video_distortion_correction.png" alt="Before correction" style="max-height: 200px;">
+                        <p class="small">Before: Curved court lines</p>
+                    </div>
+                    <div class="column" style="text-align: center;">
+                        <img src="Figures/post_video_distortion_correction.png" alt="After correction" style="max-height: 200px;">
+                        <p class="small">After: Straight court lines</p>
+                    </div>
+                </div>
+                <div class="fragment accent-box" style="margin-top: 20px;">
+                    <strong>Process:</strong> OpenCV calibration using chessboard patterns &rarr; Calculate distortion parameters &rarr; Apply correction &rarr; Crop and resize
+                </div>
+                <aside class="notes">
+                    The wide-angle lens causes barrel distortion - you can see the curved court lines on the left. We use OpenCV's camera calibration with chessboard patterns to compute and correct this distortion, ensuring accurate court coordinates and player positions.
+                </aside>
+            </section>
+
+            <!-- Slide 17: Expert Annotation Process -->
+            <section>
+                <h2>Expert Annotation Process</h2>
+                <div class="columns">
+                    <div class="column">
+                        <h3>Annotation Team</h3>
+                        <ul>
+                            <li>5 trained annotators</li>
+                            <li>Including university team member</li>
+                            <li>Badminton club members</li>
+                        </ul>
+                        <h3 style="margin-top: 20px;">Quality Control</h3>
+                        <ul>
+                            <li>Head coach review</li>
+                            <li>Discrepancy resolution</li>
+                            <li>Multiple validation passes</li>
+                        </ul>
+                    </div>
+                    <div class="column">
+                        <img src="Figures/S2_labeling_tool.png" alt="S2 Labeling tool" style="max-height: 350px;">
+                        <p class="small">Shot-by-Shot (S&sup2;) Labeling Tool interface</p>
+                    </div>
+                </div>
+                <aside class="notes">
+                    Annotation was performed by 5 trained annotators using the Shot-by-Shot labeling tool. Each annotation was reviewed by the head coach of the university badminton team to ensure accuracy. This expert oversight is critical for fine-grained action recognition.
+                </aside>
+            </section>
+
+            <!-- Slide 18: 18 Action Classes -->
+            <section>
+                <h2>18 Badminton Action Classes</h2>
+                <div style="font-size: 0.7em;">
+                    <div class="columns">
+                        <div class="column">
+                            <p><strong>Serves:</strong></p>
+                            <ul>
+                                <li>Short Serve</li>
+                                <li>Long Serve</li>
+                            </ul>
+                            <p><strong>Attacking Shots:</strong></p>
+                            <ul>
+                                <li>Smash</li>
+                                <li>Tap Smash</li>
+                                <li>Rush Shot</li>
+                                <li>Drop Shot</li>
+                                <li>Cut</li>
+                            </ul>
+                        </div>
+                        <div class="column">
+                            <p><strong>Defensive Shots:</strong></p>
+                            <ul>
+                                <li>Block</li>
+                                <li>Lift</li>
+                                <li>Defensive Clear</li>
+                                <li>Defensive Drive</li>
+                                <li>Clear</li>
+                            </ul>
+                            <p><strong>Placement Shots:</strong></p>
+                            <ul>
+                                <li>Cross-Court Flight</li>
+                                <li>Push Shot</li>
+                                <li>Transitional Slice</li>
+                                <li>Flat Shot</li>
+                                <li>Rear Court Flat Drive</li>
+                                <li>Short Flat Shot</li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+                <p class="fragment" style="margin-top: 20px;">
+                    <strong>All classes follow Badminton World Federation (BWF) standards</strong>
+                </p>
+                <aside class="notes">
+                    We defined 18 action classes following BWF standards: serves, attacking shots like smashes and drops, defensive shots like blocks and lifts, and placement shots like cross-court flights. Each represents a distinct technique that players use in competitive play.
+                </aside>
+            </section>
+
+            <!-- Slide 19: Sample Video Frames -->
+            <section>
+                <h2>Sample Video Frames</h2>
+                <div class="image-grid" style="grid-template-columns: repeat(2, 1fr); gap: 15px 30px;">
+                    <div style="text-align: center;">
+                        <img src="Figures/sample_video_frames/crop_2022-09-07_20-06-13_dataset_set1_004_000643_000665_A_00.jpg" alt="Short Serve" style="width: 100%; max-height: 120px; object-fit: cover; border-radius: 8px;">
+                        <p class="small" style="margin-top: 4px; margin-bottom: 0;"><strong>Short Serve</strong></p>
+                    </div>
+                    <div style="text-align: center;">
+                        <img src="Figures/sample_video_frames/crop_2022-09-06_17-42-57_dataset_set1_097_008539_008576_A_05.jpg" alt="Long Serve" style="width: 100%; max-height: 120px; object-fit: cover; border-radius: 8px;">
+                        <p class="small" style="margin-top: 4px; margin-bottom: 0;"><strong>Long Serve</strong></p>
+                    </div>
+                    <div style="text-align: center;">
+                        <img src="Figures/sample_video_frames/crop_2022-08-30_18-00-09_dataset_set1_034_002770_002781_B_03.jpg" alt="Tap Smash" style="width: 100%; max-height: 120px; object-fit: cover; border-radius: 8px;">
+                        <p class="small" style="margin-top: 4px; margin-bottom: 0;"><strong>Tap Smash</strong></p>
+                    </div>
+                    <div style="text-align: center;">
+                        <img src="Figures/sample_video_frames/crop_2022-08-30_18-00-09_dataset_set1_059_004534_004550_A_14.jpg" alt="Smash" style="width: 100%; max-height: 120px; object-fit: cover; border-radius: 8px;">
+                        <p class="small" style="margin-top: 4px; margin-bottom: 0;"><strong>Smash</strong></p>
+                    </div>
+                    <div style="text-align: center;">
+                        <img src="Figures/sample_video_frames/crop_2022-08-31_18-15-32_dataset_set1_028_003032_003070_A_02.jpg" alt="Lift" style="width: 100%; max-height: 120px; object-fit: cover; border-radius: 8px;">
+                        <p class="small" style="margin-top: 4px; margin-bottom: 0;"><strong>Lift</strong></p>
+                    </div>
+                    <div style="text-align: center;">
+                        <img src="Figures/sample_video_frames/crop_2022-08-30_18-59-37_dataset_set1_010_001146_001178_A_12.jpg" alt="Clear" style="width: 100%; max-height: 120px; object-fit: cover; border-radius: 8px;">
+                        <p class="small" style="margin-top: 4px; margin-bottom: 0;"><strong>Clear</strong></p>
+                    </div>
+                    <div style="text-align: center;">
+                        <img src="Figures/sample_video_frames/crop_2022-08-30_18-48-24_dataset_set1_043_005582_005611_B_07.jpg" alt="Block" style="width: 100%; max-height: 120px; object-fit: cover; border-radius: 8px;">
+                        <p class="small" style="margin-top: 4px; margin-bottom: 0;"><strong>Block</strong></p>
+                    </div>
+                    <div style="text-align: center;">
+                        <img src="Figures/sample_video_frames/crop_2022-09-01_17-49-36_dataset_set1_112_007970_008003_B_01.jpg" alt="Cross-Court Flight" style="width: 100%; max-height: 120px; object-fit: cover; border-radius: 8px;">
+                        <p class="small" style="margin-top: 4px; margin-bottom: 0;"><strong>Cross-Court</strong></p>
+                    </div>
+                </div>
+                <aside class="notes">
+                    Here are sample frames from 8 different action classes covering serves, attacking shots, and defensive shots. Notice how some actions like Tap Smash and Smash look similar but differ in power and wrist action. This fine-grained distinction is exactly what makes our dataset challenging and valuable for training action recognition models.
+                </aside>
+            </section>
+
+            <!-- Slide 20: Dataset Statistics -->
+            <section>
+                <h2>Dataset Statistics</h2>
+                <img src="Figures/distribution_number_video_per_class.png" alt="Class distribution" style="max-height: 450px;">
+                <p class="small">Distribution of video clips across 18 action classes</p>
+                <aside class="notes">
+                    This shows the distribution of clips across classes. While some classes like Clear and Lift have more samples, we've ensured each class has sufficient representation for training. We also created balanced subsets for fair benchmarking.
+                </aside>
+            </section>
+
+            <!-- Slide 21: Dataset Analysis - Feature Distance & Entropy -->
+            <section>
+                <h2>Dataset Analysis</h2>
+                <div class="columns">
+                    <div class="column" style="text-align: center;">
+                        <img src="Figures/frame_num_vs_feature_dist_scatter_plot.png" alt="Feature distance" style="max-height: 300px;">
+                        <p class="small"><strong>Mean Feature Distance by Class</strong><br>Measures frame-to-frame variation</p>
+                    </div>
+                    <div class="column" style="text-align: center;">
+                        <img src="Figures/frame_num_vs_frame_entropy_scatter_plot.png" alt="Frame entropy" style="max-height: 300px;">
+                        <p class="small"><strong>Mean Frame Entropy by Class</strong><br>Measures visual complexity</p>
+                    </div>
+                </div>
+                <p class="fragment small" style="margin-top: 20px;">
+                    <strong>Insight:</strong> Different actions show distinct patterns in temporal dynamics (feature distance) and visual complexity (entropy), validating our fine-grained classification scheme.
+                </p>
+                <aside class="notes">
+                    We analyzed the dataset using frame entropy (visual complexity) and feature distance (temporal dynamics). Different action classes show distinct patterns - fast actions like smashes have high feature distances, while static poses have lower entropy. This validates our classification scheme.
+                </aside>
+            </section>
+
+            <!-- Slide 22: Benchmark Results -->
+            <section>
+                <h2>Benchmark Results on Full Dataset</h2>
+                <table style="font-size: 0.75em;">
+                    <tr>
+                        <th>Method</th>
+                        <th>Type</th>
+                        <th>Top-1 Acc</th>
+                        <th>Top-5 Acc</th>
+                        <th>Mean Cls Acc</th>
+                    </tr>
+                    <tr>
+                        <td>R(2+1)D</td>
+                        <td>Video</td>
+                        <td>79.53%</td>
+                        <td>96.11%</td>
+                        <td>66.97%</td>
+                    </tr>
+                    <tr class="best">
+                        <td><strong>SlowFast</strong></td>
+                        <td>Video</td>
+                        <td><strong>82.80%</strong></td>
+                        <td><strong>97.54%</strong></td>
+                        <td><strong>73.80%</strong></td>
+                    </tr>
+                    <tr>
+                        <td>TimeSformer</td>
+                        <td>Video</td>
+                        <td>73.18%</td>
+                        <td>94.78%</td>
+                        <td>57.70%</td>
+                    </tr>
+                    <tr>
+                        <td>Swin</td>
+                        <td>Video</td>
+                        <td>81.99%</td>
+                        <td>96.52%</td>
+                        <td>69.93%</td>
+                    </tr>
+                    <tr>
+                        <td>MViT-V2</td>
+                        <td>Video</td>
+                        <td>14.23%</td>
+                        <td>62.23%</td>
+                        <td>10.76%</td>
+                    </tr>
+                    <tr>
+                        <td>ST-GCN</td>
+                        <td>Skeleton</td>
+                        <td>74.41%</td>
+                        <td>93.76%</td>
+                        <td>61.44%</td>
+                    </tr>
+                    <tr>
+                        <td>PoseC3D</td>
+                        <td>Skeleton</td>
+                        <td>80.76%</td>
+                        <td>96.01%</td>
+                        <td>67.18%</td>
+                    </tr>
+                </table>
+                <p class="fragment small" style="margin-top: 15px;">
+                    <strong>Key Findings:</strong> SlowFast achieves best results; skeleton-based methods competitive; MViT-V2 struggles with domain adaptation.
+                </p>
+                <aside class="notes">
+                    We benchmarked 7 state-of-the-art methods. SlowFast achieves the best results at 82.8% top-1 accuracy with its dual-pathway architecture capturing both spatial semantics and fine temporal motion. Skeleton-based methods like PoseC3D also perform well. Interestingly, MViT-V2 struggles, suggesting domain adaptation challenges.
+                </aside>
+            </section>
+
+            <!-- ==================== PART 4: BADMINTON-CLIP ==================== -->
+
+            <!-- Slide 23: Section Title - Badminton-CLIP -->
+            <section class="section-title" data-background-color="#000000">
+                <p class="section-number">Part 3</p>
+                <h2>Badminton-CLIP</h2>
+                <p style="color: #66b3ff; font-weight: 600;">Multimodal Learning for Sports Action Recognition</p>
+            </section>
+
+            <!-- Slide 24: CLIP Foundation -->
+            <section>
+                <h2>CLIP: Contrastive Language-Image Pretraining</h2>
+                <div class="columns">
+                    <div class="column">
+                        <h3>Key Innovation</h3>
+                        <ul>
+                            <li>Joint image-text embedding space</li>
+                            <li>Contrastive learning objective</li>
+                            <li>Zero-shot transfer capability</li>
+                            <li>Pre-trained on 400M image-text pairs</li>
+                        </ul>
+                        <h3 style="margin-top: 20px;">Why CLIP for Sports?</h3>
+                        <ul>
+                            <li>Strong visual representations</li>
+                            <li>Semantic understanding via text</li>
+                            <li>Robust to domain shift</li>
+                        </ul>
+                    </div>
+                    <div class="column">
+                        <img src="Figures/CLIP diagram.png" alt="CLIP diagram" style="max-height: 400px;">
+                    </div>
+                </div>
+                <aside class="notes">
+                    CLIP is a multimodal model that learns visual concepts from natural language. It maps both images and text into a shared embedding space. The key insight is that we can leverage this rich semantic understanding for action recognition by describing actions in text.
+                </aside>
+            </section>
+
+            <!-- Slide 25: Challenge - Image to Video -->
+            <section>
+                <h2>Challenge: Image to Video</h2>
+                <div class="accent-box">
+                    <strong>The Modality Gap:</strong> CLIP is trained on static images, but sports actions occur over time in video.
+                </div>
+                <div class="columns" style="margin-top: 30px;">
+                    <div class="column">
+                        <h3>Image Domain</h3>
+                        <ul>
+                            <li>Single frame</li>
+                            <li>Static appearance</li>
+                            <li>No temporal information</li>
+                        </ul>
+                    </div>
+                    <div class="column">
+                        <h3>Video Domain</h3>
+                        <ul>
+                            <li>Multiple frames</li>
+                            <li>Motion dynamics</li>
+                            <li>Temporal relationships</li>
+                        </ul>
+                    </div>
+                </div>
+                <p class="fragment" style="margin-top: 30px;">
+                    <strong>Our Solution:</strong> Adapt CLIP for video through frame-level processing and temporal pooling while leveraging multimodal learning.
+                </p>
+                <aside class="notes">
+                    The challenge is that CLIP works on static images, but badminton actions unfold over time. We need to bridge this modality gap - capturing temporal dynamics while leveraging CLIP's powerful visual-semantic representations.
+                </aside>
+            </section>
+
+            <!-- Slide 26: Badminton-CLIP Architecture -->
+            <section>
+                <h2>Badminton-CLIP Architecture</h2>
+                <img src="Figures/badminton-clip.png" alt="Badminton-CLIP architecture" style="max-height: 400px;">
+                <p class="small">Badminton-CLIP adapts CLIP for video action recognition through temporal pooling</p>
+                <aside class="notes">
+                    Here's our Badminton-CLIP architecture. We process each video frame independently through CLIP's image encoder, then aggregate the frame embeddings using temporal pooling. The text encoder generates embeddings for action descriptions, and we use contrastive learning to align video and text representations.
+                </aside>
+            </section>
+
+            <!-- Slide 27: Frame-Level Processing -->
+            <section>
+                <h2>Frame-Level Processing</h2>
+                <p>Given a video <em>V</em> with <em>T</em> frames:</p>
+                <div class="equation">
+                    <strong>x<sub>i</sub></strong> = ImageEncoder(<strong>f<sub>i</sub></strong>), &nbsp;&nbsp; &forall; i &isin; {1, ..., T}
+                </div>
+                <div class="columns" style="margin-top: 30px;">
+                    <div class="column">
+                        <h3>Process</h3>
+                        <ul>
+                            <li>Each frame processed independently</li>
+                            <li>Produces frame-level embeddings</li>
+                            <li>Preserves CLIP's visual features</li>
+                            <li>Dimension: T &times; D</li>
+                        </ul>
+                    </div>
+                    <div class="column">
+                        <h3>Benefits</h3>
+                        <ul>
+                            <li>Leverages pre-trained CLIP weights</li>
+                            <li>No architecture modification needed</li>
+                            <li>Efficient batch processing</li>
+                        </ul>
+                    </div>
+                </div>
+                <aside class="notes">
+                    For frame-level processing, each frame is passed through CLIP's image encoder independently, producing a set of frame embeddings. This approach lets us leverage CLIP's pre-trained weights directly without modifying the encoder architecture.
+                </aside>
+            </section>
+
+            <!-- Slide 28: Temporal Pooling -->
+            <section>
+                <h2>Temporal Pooling</h2>
+                <p>Aggregating frame embeddings into a video-level representation:</p>
+                <div class="equation" style="font-size: 1.2em;">
+                    <strong>v</strong> = (1/T) &sum;<sub>i=1</sub><sup>T</sup> <strong>x<sub>i</sub></strong>
+                </div>
+                <div class="accent-box" style="margin-top: 30px;">
+                    <strong>Key Insight:</strong> Average pooling implicitly incorporates temporal information by combining features across multiple frames, establishing inter-frame communication.
+                </div>
+                <p class="fragment" style="margin-top: 20px;">
+                    The resulting video representation <strong>v</strong> &isin; &real;<sup>D</sup> captures both appearance and temporal dynamics.
+                </p>
+                <aside class="notes">
+                    Temporal pooling is the key to bridging the image-video gap. By averaging frame embeddings, we create a video-level representation that captures the overall action pattern. This simple approach proves surprisingly effective because it implicitly learns temporal relationships.
+                </aside>
+            </section>
+
+            <!-- Slide 29: Prompt Engineering -->
+            <section>
+                <h2>Prompt Engineering for Sports</h2>
+                <p>Text encoder generates embeddings for action descriptions:</p>
+                <div class="equation">
+                    <strong>t</strong> = TextEncoder("a video of a &lt;action&gt;")
+                </div>
+                <div class="columns" style="margin-top: 30px;">
+                    <div class="column">
+                        <h3>Template Design</h3>
+                        <ul>
+                            <li>"a video of a smash"</li>
+                            <li>"a video of a drop shot"</li>
+                            <li>"a video of a clear"</li>
+                        </ul>
+                    </div>
+                    <div class="column">
+                        <h3>Why It Works</h3>
+                        <ul>
+                            <li>Provides semantic context</li>
+                            <li>Aligns with CLIP's training</li>
+                            <li>Domain-specific vocabulary</li>
+                        </ul>
+                    </div>
+                </div>
+                <aside class="notes">
+                    Prompt engineering is crucial for aligning text with video. We use a simple template "a video of a [action]" that mirrors CLIP's training distribution. This semantic context helps the model understand what each action represents beyond just visual appearance.
+                </aside>
+            </section>
+
+            <!-- Slide 30: Contrastive Learning Objective -->
+            <section>
+                <h2>Contrastive Learning Objective</h2>
+                <p>Training objective maximizes similarity between matching video-text pairs:</p>
+                <div class="equation" style="font-size: 0.9em;">
+                    L = -&sum;<sub>i</sub> log [ exp(sim(<strong>v<sub>i</sub></strong>, <strong>t<sub>i</sub></strong>) / &tau;) / &sum;<sub>j</sub> exp(sim(<strong>v<sub>i</sub></strong>, <strong>t<sub>j</sub></strong>) / &tau;) ]
+                </div>
+                <div class="columns" style="margin-top: 30px;">
+                    <div class="column">
+                        <h3>Components</h3>
+                        <ul>
+                            <li><strong>sim(&middot;)</strong>: Cosine similarity</li>
+                            <li><strong>&tau;</strong>: Temperature parameter</li>
+                            <li>Cross-entropy formulation</li>
+                        </ul>
+                    </div>
+                    <div class="column">
+                        <h3>Effect</h3>
+                        <ul>
+                            <li>Pull matching pairs together</li>
+                            <li>Push non-matching pairs apart</li>
+                            <li>Learn discriminative embeddings</li>
+                        </ul>
+                    </div>
+                </div>
+                <aside class="notes">
+                    The contrastive loss encourages the model to maximize similarity between matching video-text pairs while minimizing it for non-matching pairs. This creates a discriminative embedding space where similar actions cluster together.
+                </aside>
+            </section>
+
+            <!-- Slide 31: Fusion Method Comparison -->
+            <section>
+                <h2>Fusion Method Comparison</h2>
+                <p>We explored different strategies for combining frame information:</p>
+                <table style="font-size: 0.85em; margin-top: 20px;">
+                    <tr>
+                        <th>Fusion Method</th>
+                        <th>Top-1 Accuracy</th>
+                        <th>Top-5 Accuracy</th>
+                    </tr>
+                    <tr>
+                        <td>Image-level fusion</td>
+                        <td>58.21%</td>
+                        <td>86.14%</td>
+                    </tr>
+                    <tr>
+                        <td>Decision-level fusion</td>
+                        <td>59.42%</td>
+                        <td>87.76%</td>
+                    </tr>
+                    <tr class="best">
+                        <td><strong>Embedding-level fusion</strong></td>
+                        <td><strong>60.56%</strong></td>
+                        <td><strong>88.33%</strong></td>
+                    </tr>
+                </table>
+                <div class="fragment accent-box" style="margin-top: 20px;">
+                    <strong>Finding:</strong> Embedding-level fusion (our approach) outperforms alternatives by learning temporal relations between frames in the embedding space.
+                </div>
+                <aside class="notes">
+                    We compared three fusion strategies. Image-level fusion treats frames independently. Decision-level averages predictions. Our embedding-level fusion averages embeddings before classification, which best captures temporal relationships. It achieves 60.56% top-1 accuracy.
+                </aside>
+            </section>
+
+            <!-- Slide 32: Results - VideoBadminton-10 -->
+            <section>
+                <h2>Results: Small Data Performance</h2>
+                <p>Performance on <strong>VideoBadminton-10</strong> (10 samples per class)</p>
+                <table style="font-size: 0.8em;">
+                    <tr>
+                        <th>Method</th>
+                        <th>Top-1 Acc</th>
+                        <th>Top-5 Acc</th>
+                    </tr>
+                    <tr>
+                        <td>SlowFast</td>
+                        <td>12.79%</td>
+                        <td>38.08%</td>
+                    </tr>
+                    <tr>
+                        <td>TimeSformer</td>
+                        <td>19.45%</td>
+                        <td>54.25%</td>
+                    </tr>
+                    <tr>
+                        <td>Swin</td>
+                        <td>19.86%</td>
+                        <td>56.91%</td>
+                    </tr>
+                    <tr>
+                        <td>ST-GCN</td>
+                        <td>28.05%</td>
+                        <td>68.58%</td>
+                    </tr>
+                    <tr>
+                        <td>PoseC3D</td>
+                        <td>23.03%</td>
+                        <td>59.77%</td>
+                    </tr>
+                    <tr class="best">
+                        <td><strong>Badminton-CLIP (Ours)</strong></td>
+                        <td><strong>35.56%</strong></td>
+                        <td><strong>69.44%</strong></td>
+                    </tr>
+                </table>
+                <p class="fragment" style="margin-top: 15px;">
+                    <strong>Key Result:</strong> Badminton-CLIP achieves <span class="highlight">+7.5%</span> improvement over the next best method with limited training data!
+                </p>
+                <aside class="notes">
+                    On VideoBadminton-10 with just 10 samples per class, Badminton-CLIP significantly outperforms all other methods at 35.56% top-1 accuracy - a 7.5% improvement over ST-GCN. This demonstrates the power of multimodal pretraining for low-data scenarios.
+                </aside>
+            </section>
+
+            <!-- Slide 33: Results - VideoBadminton-50 -->
+            <section>
+                <h2>Results: Full Benchmark Comparison</h2>
+                <p>Performance on <strong>VideoBadminton-50</strong> (50 samples per class)</p>
+                <table style="font-size: 0.8em;">
+                    <tr>
+                        <th>Method</th>
+                        <th>Top-1 Acc</th>
+                        <th>Top-5 Acc</th>
+                    </tr>
+                    <tr>
+                        <td>SlowFast</td>
+                        <td>12.28%</td>
+                        <td>49.44%</td>
+                    </tr>
+                    <tr>
+                        <td>TimeSformer</td>
+                        <td>45.45%</td>
+                        <td>85.16%</td>
+                    </tr>
+                    <tr>
+                        <td>Swin</td>
+                        <td>53.53%</td>
+                        <td>87.51%</td>
+                    </tr>
+                    <tr>
+                        <td>ST-GCN</td>
+                        <td><strong>60.70%</strong></td>
+                        <td>89.25%</td>
+                    </tr>
+                    <tr>
+                        <td>PoseC3D</td>
+                        <td>59.98%</td>
+                        <td><strong>89.87%</strong></td>
+                    </tr>
+                    <tr class="best">
+                        <td><strong>Badminton-CLIP (Ours)</strong></td>
+                        <td>60.56%</td>
+                        <td>88.33%</td>
+                    </tr>
+                </table>
+                <p class="fragment" style="margin-top: 15px;">
+                    <strong>Finding:</strong> Badminton-CLIP performs comparably to skeleton-based methods, demonstrating effectiveness of multimodal approach even with more training data.
+                </p>
+                <aside class="notes">
+                    With 50 samples per class, Badminton-CLIP achieves 60.56% accuracy, essentially matching the skeleton-based methods which have explicit pose information. This is remarkable because our method uses only RGB frames with text guidance.
+                </aside>
+            </section>
+
+            <!-- Slide 34: Key Advantages of Badminton-CLIP -->
+            <section>
+                <h2>Key Advantages of Badminton-CLIP</h2>
+                <div class="columns">
+                    <div class="column">
+                        <div class="contribution-card">
+                            <h3>Data Efficiency</h3>
+                            <p>Excels with limited training data due to multimodal pretraining</p>
+                        </div>
+                        <div class="contribution-card">
+                            <h3>No Pose Extraction</h3>
+                            <p>Works directly on RGB frames without skeleton extraction</p>
+                        </div>
+                    </div>
+                    <div class="column">
+                        <div class="contribution-card">
+                            <h3>Semantic Understanding</h3>
+                            <p>Text descriptions provide rich action semantics</p>
+                        </div>
+                        <div class="contribution-card">
+                            <h3>Transferability</h3>
+                            <p>Architecture generalizes to other sports and domains</p>
+                        </div>
+                    </div>
+                </div>
+                <aside class="notes">
+                    Badminton-CLIP offers several key advantages: It's highly data-efficient, doesn't require pose extraction, provides semantic understanding through text, and the architecture can transfer to other sports domains.
+                </aside>
+            </section>
+
+            <!-- ==================== PART 5: SITTING POSTURE ==================== -->
+
+            <!-- Slide 35: Section Title - Sitting Posture -->
+            <section class="section-title" data-background-color="#000000">
+                <p class="section-number">Part 4</p>
+                <h2>Sitting Posture Analysis</h2>
+                <p style="color: #66b3ff; font-weight: 600;">Camera-Based Deep Learning for Healthcare</p>
+            </section>
+
+            <!-- Slide 36: Healthcare Impact of Lower Back Pain -->
+            <section>
+                <h2>Healthcare Impact of Lower Back Pain</h2>
+                <div class="columns">
+                    <div class="column">
+                        <div class="stats-box" style="display: block; margin-bottom: 15px;">
+                            <div class="number">#1</div>
+                            <div class="label">Cause of disability worldwide</div>
+                        </div>
+                        <div class="stats-box" style="display: block; margin-bottom: 15px;">
+                            <div class="number">80%</div>
+                            <div class="label">Adults experience LBP in lifetime</div>
+                        </div>
+                        <div class="stats-box" style="display: block;">
+                            <div class="number">$100B+</div>
+                            <div class="label">Annual cost in US alone</div>
+                        </div>
+                    </div>
+                    <div class="column">
+                        <h3>Key Factors</h3>
+                        <ul>
+                            <li>Prolonged sitting (office work)</li>
+                            <li>Poor posture habits</li>
+                            <li>Lack of real-time feedback</li>
+                            <li>Limited access to experts</li>
+                        </ul>
+                        <div class="accent-box" style="margin-top: 20px;">
+                            <strong>Opportunity:</strong> AI-based posture monitoring can provide accessible, continuous feedback.
+                        </div>
+                    </div>
+                </div>
+                <aside class="notes">
+                    Lower back pain is the leading cause of disability worldwide. 80% of adults experience it at some point, costing over 100 billion dollars annually in the US alone. Poor sitting posture is a major contributor, especially in our increasingly sedentary work culture.
+                </aside>
+            </section>
+
+            <!-- Slide 37: Traditional vs AI-Based Methods -->
+            <section>
+                <h2>Traditional vs. AI-Based Methods</h2>
+                <div class="columns">
+                    <div class="column">
+                        <img src="Figures/traditional_sitting_posture_measurement_01.png" alt="Traditional measurement" style="max-height: 300px;">
+                        <p class="small">Traditional manual posture measurement</p>
+                    </div>
+                    <div class="column">
+                        <h3>Traditional Methods</h3>
+                        <ul>
+                            <li>Require trained experts</li>
+                            <li>Time-consuming</li>
+                            <li>Not scalable</li>
+                            <li>Periodic assessment only</li>
+                        </ul>
+                        <h3 style="margin-top: 20px;">Our AI Approach</h3>
+                        <ul>
+                            <li>Automated detection</li>
+                            <li>Real-time feedback</li>
+                            <li>Accessible to everyone</li>
+                            <li>Continuous monitoring</li>
+                        </ul>
+                    </div>
+                </div>
+                <aside class="notes">
+                    Traditional posture assessment requires trained professionals using manual techniques - it's time-consuming and not scalable. Our camera-based AI approach provides automated, real-time feedback that anyone can use at home or in the office.
+                </aside>
+            </section>
+
+            <!-- Slide 38: Our Camera-Based Approach -->
+            <section>
+                <h2>Our Camera-Based Approach</h2>
+                <div class="workflow" style="margin: 30px 0;">
+                    <div class="workflow-step">Camera Input</div>
+                    <span class="workflow-arrow">&#8594;</span>
+                    <div class="workflow-step">Pose Estimation</div>
+                    <span class="workflow-arrow">&#8594;</span>
+                    <div class="workflow-step">Posture Classification</div>
+                    <span class="workflow-arrow">&#8594;</span>
+                    <div class="workflow-step">Feedback</div>
+                </div>
+                <div class="accent-box">
+                    <h3>Key Components</h3>
+                    <ul>
+                        <li><strong>MobileNet backbone:</strong> Lightweight for real-time processing</li>
+                        <li><strong>Keypoint detection:</strong> Ear, shoulder, spine, hip positions</li>
+                        <li><strong>Classification methods:</strong> KNN, OKS, Angle computation</li>
+                        <li><strong>Validation:</strong> Against Vicon motion capture system</li>
+                    </ul>
+                </div>
+                <aside class="notes">
+                    Our system uses a standard camera to capture the user, MobileNet for efficient pose estimation, and three classification methods for posture analysis. We validated against the gold-standard Vicon motion capture system.
+                </aside>
+            </section>
+
+            
+
+            <!-- Slide 41: MobileNet for Pose Estimation -->
+            <section>
+                <h2>MobileNet for Pose Estimation</h2>
+                <div class="columns">
+                    <div class="column">
+                        <h3>Why MobileNet?</h3>
+                        <ul>
+                            <li><strong>Lightweight:</strong> Ideal for mobile/embedded devices</li>
+                            <li><strong>Efficient:</strong> Depthwise separable convolutions</li>
+                            <li><strong>Accurate:</strong> Sufficient for keypoint detection</li>
+                            <li><strong>Real-time:</strong> Fast inference speed</li>
+                        </ul>
+                        <h3 style="margin-top: 20px;">Architecture</h3>
+                        <ul>
+                            <li>Depthwise convolution per channel</li>
+                            <li>Pointwise 1x1 convolution</li>
+                            <li>Fewer parameters, similar accuracy</li>
+                        </ul>
+                    </div>
+                    <div class="column">
+                        <div class="accent-box">
+                            <h3>Future Vision</h3>
+                            <p>Mobile app for continuous posture monitoring - enabled by MobileNet's efficiency.</p>
+                        </div>
+                    </div>
+                </div>
+                <aside class="notes">
+                    We chose MobileNet because it's designed for mobile deployment - it uses depthwise separable convolutions to reduce computation while maintaining accuracy. This enables our future vision of a smartphone app for continuous posture monitoring.
+                </aside>
+            </section>
+
+            <!-- Slide 42: KNN-Based Classification Methods -->
+            <section>
+                <h2>Posture Classification Methods</h2>
+                <img src="Figures/compare_KM_posture_20220628_keys_4951_results.jpg" alt="KNN methods comparison" style="max-height: 350px;">
+                <p class="small">Comparison of three KNN-based methods using different features</p>
+                <div class="columns" style="margin-top: 15px; font-size: 0.85em;">
+                    <div class="column">
+                        <ul>
+                            <li><strong>Coordinates:</strong> Euclidean distance of keypoints</li>
+                            <li><strong>Features:</strong> MobileNet intermediate features</li>
+                        </ul>
+                    </div>
+                    <div class="column">
+                        <ul>
+                            <li><strong>OKS:</strong> Object Keypoint Similarity (best)</li>
+                        </ul>
+                    </div>
+                </div>
+                <aside class="notes">
+                    We developed three classification methods. The coordinates method directly compares keypoint positions. The feature method uses MobileNet's learned representations. Object Keypoint Similarity (OKS) proved most accurate by incorporating spatial and contextual information.
+                </aside>
+            </section>
+
+            <!-- Slide 43: Object Keypoint Similarity (OKS) -->
+            <!-- <section>
+                <h2>Object Keypoint Similarity (OKS)</h2>
+                <p>The most accurate method for posture evaluation:</p>
+                <div class="equation" style="font-size: 0.85em;">
+                    OKS = [&sum;<sub>i</sub> exp(-d<sub>i</sub><sup>2</sup> / 2s<sup>2</sup>k<sub>i</sub><sup>2</sup>) &delta;(v<sub>i</sub> > 0)] / [&sum;<sub>i</sub> &delta;(v<sub>i</sub> > 0)]
+                </div>
+                <div class="columns" style="margin-top: 20px;">
+                    <div class="column">
+                        <h3>Parameters</h3>
+                        <ul>
+                            <li><strong>d<sub>i</sub>:</strong> Euclidean distance to ground truth</li>
+                            <li><strong>s:</strong> Object segment area</li>
+                            <li><strong>k<sub>i</sub>:</strong> Per-keypoint constant</li>
+                            <li><strong>v<sub>i</sub>:</strong> Visibility flag</li>
+                        </ul>
+                    </div>
+                    <div class="column">
+                        <h3>Advantages</h3>
+                        <ul>
+                            <li>Robust to scale variations</li>
+                            <li>Handles partial occlusions</li>
+                            <li>Widely used in COCO benchmark</li>
+                            <li>Best threshold: 0.11</li>
+                        </ul>
+                    </div>
+                </div>
+                <aside class="notes">
+                    OKS is the COCO keypoint evaluation metric. It measures how close predicted keypoints are to ground truth, accounting for object scale and keypoint-specific tolerances. We found OKS with threshold 0.11 provides the best posture classification.
+                </aside>
+            </section> -->
+
+            <!-- Slide 44: Angle Computation Method -->
+            <section>
+                <h2>Neck Angle Computation</h2>
+                <div class="columns">
+                    <div class="column">
+                        <p>Computing neck angle from ear and shoulder coordinates:</p>
+                        <div class="equation" style="margin: 20px 0;">
+                            &theta; = arctan((y<sub>2</sub> - y<sub>1</sub>) / (x<sub>2</sub> - x<sub>1</sub>))
+                        </div>
+                        <div class="equation">
+                            &theta;<sub>deg</sub> = &theta; &times; (180 / &pi;)
+                        </div>
+                        <p class="small" style="margin-top: 20px;">
+                            Where (x<sub>1</sub>, y<sub>1</sub>) is ear position and (x<sub>2</sub>, y<sub>2</sub>) is shoulder position.
+                        </p>
+                    </div>
+                    <div class="column">
+                        <img src="Figures/angle_computation_via_prediction.png" alt="Angle computation" style="max-height: 350px;">
+                    </div>
+                </div>
+                <aside class="notes">
+                    The neck angle method computes the angle between the ear-shoulder line and horizontal. This craniovertebral angle is clinically significant - a forward head posture reduces this angle, indicating poor posture that strains the neck and upper back.
+                </aside>
+            </section>
+
+            <!-- Slide 45: Correct vs Wrong Posture -->
+            <section>
+                <h2>Correct vs. Wrong Posture Detection</h2>
+                <div class="columns">
+                    <div class="column" style="text-align: center;">
+                        <img src="Figures/wrong_3_conditions_KM_posture_20220628_keys_5201.jpg" alt="Correct posture" style="max-height: 350px;">
+                        <p><strong style="color: #248a3d;">Correct Posture</strong></p>
+                    </div>
+                    <div class="column" style="text-align: center;">
+                        <img src="Figures/wrong_3_conditions_KM_posture_20220628_keys_4201.jpg" alt="Wrong posture" style="max-height: 350px;">
+                        <p><strong style="color: #d70015;">Wrong Posture</strong></p>
+                    </div>
+                </div>
+                <p class="small" style="margin-top: 15px;">
+                    System detects forward head posture, slouching, and other common posture problems.
+                </p>
+                <aside class="notes">
+                    Here's our system in action. On the left is correct posture with proper spinal alignment. On the right, the system detects forward head posture - notice how the ear is forward of the shoulder line. This type of real-time feedback can help users correct their posture throughout the day.
+                </aside>
+            </section>
+
+            <!-- Slide 39: Data Collection with Vicon -->
+            <section>
+                <h2>Data Collection Setup</h2>
+                <div class="columns">
+                    <div class="column">
+                        <h3>Participants</h3>
+                        <ul>
+                            <li>15 volunteers</li>
+                            <li>45-minute sitting sessions</li>
+                            <li>Controlled posture conditions</li>
+                        </ul>
+                        <h3 style="margin-top: 20px;">Camera Setup</h3>
+                        <ul>
+                            <li>Side camera: 90&deg; angle (lateral view)</li>
+                            <li>Front camera: 45&deg; angle (frontal view)</li>
+                        </ul>
+                    </div>
+                    <div class="column">
+                        <img src="Figures/camera_positions.png" alt="Camera positions" style="max-height: 350px;">
+                        <p class="small">Required sitting posture and camera positions</p>
+                    </div>
+                </div>
+                <aside class="notes">
+                    We recruited 15 participants for 45-minute sitting sessions. Two cameras capture lateral and frontal views simultaneously. The side camera is critical for measuring neck angle, while the front camera provides additional posture information.
+                </aside>
+            </section>
+
+            <!-- Slide 40: Vicon Motion Capture Validation -->
+            <section>
+                <h2>Vicon Motion Capture Validation</h2>
+                <div class="columns">
+                    <div class="column">
+                        <h3>13 Reflective Markers</h3>
+                        <ul>
+                            <li><strong>Ears:</strong> 2 markers</li>
+                            <li><strong>Torso:</strong> 3 markers (C7, T10, Dorsum)</li>
+                            <li><strong>Shoulders:</strong> 2 markers (acromion)</li>
+                            <li><strong>Hips:</strong> 2 markers (ASIS)</li>
+                            <li><strong>Knees:</strong> 2 markers</li>
+                            <li><strong>Ankles:</strong> 2 markers</li>
+                        </ul>
+                    </div>
+                    <div class="column" style="text-align: center;">
+                        <video src="Figures/convert_3d_video.mov" autoplay loop muted playsinline style="max-height: 350px; border-radius: 12px; box-shadow: 0 8px 30px rgba(0, 0, 0, 0.12);"></video>
+                        <p class="small">3D visualization of Vicon marker coordinates</p>
+                    </div>
+                </div>
+                <aside class="notes">
+                    The Vicon system provides ground truth through 13 reflective markers placed on key anatomical points. This high-precision motion capture lets us validate our camera-based predictions against gold-standard measurements. The video shows the 3D reconstruction of marker positions in real-time.
+                </aside>
+            </section>
+
+            <!-- Slide 46: Validation Results -->
+            <section>
+                <h2>Validation Against Vicon</h2>
+                <div class="accent-box">
+                    <h3>Key Findings</h3>
+                    <ul>
+                        <li><strong>OKS method</strong> provides highest accuracy in posture classification</li>
+                        <li><strong>High correlation</strong> with Vicon ground truth measurements</li>
+                        <li><strong>Real-time capable</strong> on standard hardware</li>
+                        <li><strong>Threshold of 0.11</strong> optimally balances sensitivity and specificity</li>
+                    </ul>
+                </div>
+                <div class="fragment" style="margin-top: 30px;">
+                    <h3>Clinical Implications</h3>
+                    <ul>
+                        <li>Accessible posture monitoring without expensive equipment</li>
+                        <li>Continuous feedback for behavior change</li>
+                        <li>Data collection for longitudinal studies</li>
+                        <li>Integration potential with telemedicine</li>
+                    </ul>
+                </div>
+                <aside class="notes">
+                    Our validation shows high correlation with Vicon measurements, confirming that camera-based pose estimation can reliably assess sitting posture. The clinical implications are significant - we can provide accessible, continuous posture monitoring without expensive equipment.
+                </aside>
+            </section>
+
+            <!-- ==================== PART 6: CONCLUSION ==================== -->
+
+            <!-- Slide 47: Section Title - Synthesis -->
+            <section class="section-title" data-background-color="#000000">
+                <p class="section-number">Part 5</p>
+                <h2>Summary & Future Directions</h2>
+            </section>
+
+            <!-- Slide 48: Research Contributions Summary -->
+            <section>
+                <h2>Research Contributions Summary</h2>
+                <div class="contribution-card">
+                    <h3>1. VideoBadminton Dataset</h3>
+                    <p>First comprehensive fine-grained badminton action recognition dataset with 7,822 clips across 18 BWF-standard action classes.</p>
+                </div>
+                <div class="contribution-card">
+                    <h3>2. Badminton-CLIP Model</h3>
+                    <p>Novel multimodal approach adapting CLIP for video action recognition, achieving SOTA results on small datasets through temporal pooling and prompt engineering.</p>
+                </div>
+                <div class="contribution-card">
+                    <h3>3. Camera-Based Posture Analysis</h3>
+                    <p>Accessible deep learning method for sitting posture detection, validated against gold-standard Vicon motion capture.</p>
+                </div>
+                <aside class="notes">
+                    To summarize my three main contributions: First, VideoBadminton provides the research community with a high-quality benchmark for fine-grained sports action recognition. Second, Badminton-CLIP demonstrates how multimodal learning can improve action recognition, especially with limited data. Third, our posture analysis system brings pose estimation to healthcare with an accessible, validated approach.
+                </aside>
+            </section>
+
+            <!-- Slide 49: Broader Impact -->
+            <!-- <section>
+                <h2>Broader Impact</h2>
+                <div class="columns">
+                    <div class="column">
+                        <h3>Sports Analytics</h3>
+                        <ul>
+                            <li>Automated performance analysis</li>
+                            <li>Personalized coaching feedback</li>
+                            <li>Injury prevention insights</li>
+                            <li>Enhanced broadcasting</li>
+                            <li>Training optimization</li>
+                        </ul>
+                    </div>
+                    <div class="column">
+                        <h3>Healthcare</h3>
+                        <ul>
+                            <li>Accessible posture monitoring</li>
+                            <li>Lower back pain prevention</li>
+                            <li>Rehabilitation support</li>
+                            <li>Telemedicine integration</li>
+                            <li>Workplace wellness programs</li>
+                        </ul>
+                    </div>
+                </div>
+                <div class="fragment accent-box" style="margin-top: 20px;">
+                    <strong>Unifying Theme:</strong> Human pose estimation and deep learning can transform how we understand and improve human movement in both athletic and clinical contexts.
+                </div>
+                <aside class="notes">
+                    The broader impact spans sports and healthcare. In sports, we enable automated analysis for coaches and athletes. In healthcare, we democratize posture assessment. The unifying theme is using AI to understand and improve human movement.
+                </aside>
+            </section> -->
+
+            <!-- Slide 50: Future Research Directions -->
+            <section>
+                <h2>Future Research Directions</h2>
+                <div class="columns">
+                    <div class="column">
+                        <h3>Sports Action Recognition</h3>
+                        <ul>
+                            <li><strong>Extend to other sports:</strong> Table tennis, baseball, tennis - applying the VideoBadminton workflow</li>
+                            <li><strong>LLM/LVM Integration:</strong> Leverage large language and vision models to improve recognition accuracy</li>
+                            <li><strong>AI Agents:</strong> Introduce LLM-based agents for automated sports analysis and coaching feedback</li>
+                        </ul>
+                    </div>
+                    <div class="column">
+                        <h3>Healthcare Applications</h3>
+                        <ul>
+                            <li><strong>Posture Monitoring App:</strong> Mobile application for real-time sitting posture correction (ongoing collaboration with Auburn University)</li>
+                            <li><strong>Clinical Validation:</strong> Expand studies with healthcare partners</li>
+                            <li><strong>Workplace Wellness:</strong> Integration with corporate health programs</li>
+                        </ul>
+                    </div>
+                </div>
+                <div class="fragment accent-box" style="margin-top: 20px;">
+                    <strong>Research Vision:</strong> Build an AI-powered ecosystem that bridges cutting-edge foundation models (LLMs, Vision-Language Models) with practical applications in sports analytics and preventive healthcare.
+                </div>
+                <aside class="notes">
+                    My future research has two main thrusts. First, extending the sports action recognition framework to other sports like table tennis and baseball, while integrating large language and vision models to create intelligent coaching agents. Second, developing a mobile posture monitoring app in collaboration with Auburn University, with plans for clinical validation and workplace wellness programs.
+                </aside>
+            </section>
+
+            <!-- Slide 51: Mentoring & Collaborations -->
+            <section>
+                <h2>Mentoring & Collaborations</h2>
+                <div class="columns">
+                    <div class="column">
+                        <h3>Student Mentoring (Fisk University)</h3>
+                        <ul>
+                            <li><strong>Honors Projects:</strong> Supervised undergraduate honors research in computer vision and AI</li>
+                            <li><strong>Thesis Projects:</strong> Guided senior thesis students on pose estimation applications</li>
+                            <li>Mentored students from idea development to completion</li>
+                        </ul>
+                        <h3 style="margin-top: 20px;">Active Collaborations</h3>
+                        <ul>
+                            <li><strong>Auburn University:</strong> Sitting posture app development</li>
+                            <li><strong>Taiwan Central University:</strong> Sports video analysis</li>
+                        </ul>
+                    </div>
+                    <div class="column">
+                        <h3>Future Collaboration Areas</h3>
+                        <ul>
+                            <li><strong>Computer Science:</strong> Vision-language models, LLM agents</li>
+                            <li><strong>Sports Science:</strong> Biomechanics, athletic performance</li>
+                            <li><strong>Healthcare:</strong> Physical therapy, rehabilitation</li>
+                            <li><strong>Industry:</strong> Sports tech, healthcare startups</li>
+                        </ul>
+                        <h3 style="margin-top: 20px;">Teaching Interests</h3>
+                        <ul>
+                            <li>Computer Vision</li>
+                            <li>Deep Learning</li>
+                            <li>AI Applications</li>
+                        </ul>
+                    </div>
+                </div>
+                <aside class="notes">
+                    At Fisk University, I've mentored undergraduate students on honors and thesis projects, guiding them through research in computer vision and AI applications. I maintain an active collaboration with Auburn University on the sitting posture app development, and I'm eager to build new interdisciplinary partnerships in sports science and healthcare.
+                </aside>
+            </section>
+
+            <!-- Slide 52: Thank You -->
+            <section class="thank-you" data-background-color="#000000">
+                <h2 style="color: #ffffff !important;">Thank You!</h2>
+                <p style="font-size: 1.2em; margin: 40px 0; color: rgba(255,255,255,0.9) !important;">Questions & Discussion</p>
+                <hr style="border: none; height: 1px; background: rgba(255,255,255,0.3); width: 40%; margin: 30px auto;">
+                <p style="color: #ffffff !important;"><strong style="color: #ffffff !important;">Qi Li, Ph.D.</strong></p>
+                <p style="color: rgba(255,255,255,0.85) !important;">Ph.D., Auburn University<br>Currently at Fisk University</p>
+                <p style="margin-top: 30px; color: #66b3ff !important; font-weight: 500;">
+                    Research: Human Pose Estimation | Action Recognition | Healthcare AI | LLM Agents
+                </p>
+                <aside class="notes">
+                    Thank you for your attention. I'm happy to take questions about any aspect of my research - whether it's the technical details of VideoBadminton and Badminton-CLIP, the healthcare applications, my mentoring experience, or future research directions including LLM integration.
+                </aside>
+            </section>
+
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/reveal.js@4.5.0/dist/reveal.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/reveal.js@4.5.0/plugin/notes/notes.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/reveal.js@4.5.0/plugin/highlight/highlight.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/reveal.js@4.5.0/plugin/math/math.js"></script>
+    <script>
+        Reveal.initialize({
+            hash: true,
+            slideNumber: true,
+            progress: true,
+            center: true,
+            transition: 'slide',
+            transitionSpeed: 'default',
+            backgroundTransition: 'fade',
+
+            // Aspect ratio (16:9)
+            width: 1280,
+            height: 720,
+
+            // Factor of the display size that should remain empty around the content
+            margin: 0.04,
+
+            // Bounds for smallest/largest possible scale to apply to content
+            minScale: 0.2,
+            maxScale: 2.0,
+
+            // Enable keyboard shortcuts
+            keyboard: true,
+
+            // Enable touch navigation
+            touch: true,
+
+            // Loop the presentation
+            loop: false,
+
+            // Flags if the presentation is running in an embedded mode
+            embedded: false,
+
+            // Show help overlay when '?' key is pressed
+            help: true,
+
+            // Pause the presentation when losing focus
+            pauseOnBlur: true,
+
+            // Enable speaker notes
+            showNotes: false,
+
+            plugins: [ RevealNotes, RevealHighlight, RevealMath.KaTeX ]
+        });
+    </script>
+</body>
+</html>
